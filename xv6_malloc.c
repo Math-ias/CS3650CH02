@@ -68,7 +68,6 @@ morecore(size_t nu)
 
   if(nu < 4096)
     nu = 4096;
-  // TODO: Replace sbrk use with mmap
   p = mmap(0, nu * sizeof(Header), PROT_READ|PROT_WRITE,
            MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
   if(p == (char*)-1)
@@ -116,6 +115,25 @@ xmalloc(size_t nbytes)
 void*
 xrealloc(void* prev, size_t nn)
 {
-  // TODO: implement a working realloc
-  return prev + nn;
+    if (prev == NULL) {
+        // "If ptr is NULL, then the call is equivalent to malloc(size), for all values of size;"
+        return xmalloc(nn);
+    } else {
+        // "if size is equal to zero, and ptr is not NULL, then the call is equivalent to free(ptr)"
+        if (nn == 0) {
+            xfree(prev);
+            return NULL;
+        }
+        
+        // The contents will be unchanged in the range from the start of the
+        // region up to the minimum of the old and new sizes.
+        Header* prev_head = (Header*) prev - 1;
+        size_t block_size = prev_head->s.size;
+        void* new_data = xmalloc(nn);
+        if (block_size < nn) {
+            memcpy(new_data, prev, block_size - sizeof(Header));
+        }
+        return new_data;
+    }
+  
 }
