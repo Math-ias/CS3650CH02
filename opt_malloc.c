@@ -215,6 +215,7 @@ void* xrealloc(void* prev, size_t bytes) {
         
         // The contents will be unchanged in the range from the start of the
         // region up to the minimum of the old and new sizes.
+        // Ideally we would use the same arena but we found this change unnecessary.
         
         block* my_block = ((block*) prev) - 1;
         // if (my_block->next != NON_BUCKET_RESERVED) {

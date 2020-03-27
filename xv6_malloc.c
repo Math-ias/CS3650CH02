@@ -3,6 +3,8 @@
 #include <pthread.h>
 #include <string.h>
 
+#include <stdio.h>
+
 #include "xmalloc.h"
 
 // Memory allocator by Kernighan and Ritchie,
@@ -127,14 +129,15 @@ xrealloc(void* prev, size_t nn)
         
         // The contents will be unchanged in the range from the start of the
         // region up to the minimum of the old and new sizes.
-        Header* prev_head = (Header*) prev - 1;
-        size_t block_size = prev_head->s.size;
+        Header* prev_head = ((Header*) prev) - 1;
+        unsigned int block_size = prev_head->s.size * sizeof(Header);
         void* new_data = xmalloc(nn);
         if (block_size < nn) {
             memcpy(new_data, prev, block_size - sizeof(Header));
         } else {
             memcpy(new_data, prev, nn);
         }
+        xfree(prev);
         return new_data;
     }
   
