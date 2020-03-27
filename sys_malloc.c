@@ -3,21 +3,14 @@
 
 #include "xmalloc.h"
 
-void*
-xmalloc(size_t bytes)
-{
-    printf("allocated %ld\n", bytes);
+void* xmalloc(size_t bytes) {
     return malloc(bytes);
 }
 
-void
-xfree(void* ptr)
-{
+void xfree(void* ptr) {
     free(ptr);
 }
 
-void*
-xrealloc(void* prev, size_t bytes)
-{
+void* xrealloc(void* prev, size_t bytes) {
     return realloc(prev, bytes);
 }

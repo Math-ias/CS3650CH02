@@ -132,6 +132,8 @@ xrealloc(void* prev, size_t nn)
         void* new_data = xmalloc(nn);
         if (block_size < nn) {
             memcpy(new_data, prev, block_size - sizeof(Header));
+        } else {
+            memcpy(new_data, prev, nn);
         }
         return new_data;
     }

@@ -8,7 +8,6 @@
 
 #define SIZE (9 * 1024 * 1024)
 #define LIMIT (16 * 1024 * 1024)
-// TODO: Set the limit 16 MB when submitting.
 
 long
 isqrt_search(long xx, long lo, long hi)
