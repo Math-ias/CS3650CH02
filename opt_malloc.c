@@ -34,6 +34,8 @@ typedef struct arena {
 
 // Our data structure is a 
 
+pthread_mutex_t initialize_lock = PTHREAD_MUTEX_INITIALIZER;
+
 static arena arenas[ARENAS];
 int initialized_arenas = 0;
 __thread int threads_favorite_arena_index = 0;
@@ -43,10 +45,17 @@ __thread int threads_favorite_arena_index = 0;
  */
 void initialize_arenas() {
     if (!initialized_arenas) {
-        // Initialize code here.
+        pthread_mutex_lock(&initialize_lock);
+        // We wake up. We might actually be initialized now.
+        if (initialized_arenas) {
+            pthread_mutex_unlock(&initialize_lock);
+            return;
+        }
         for (int i = 0; i < ARENAS; i++) {
             pthread_mutex_init(&(arenas[i].lock), NULL);
         }
+        initialized_arenas = 1;
+        pthread_mutex_unlock(&initialize_lock);
     }
 }
 
