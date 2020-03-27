@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
 
 #define ARENAS 4
@@ -74,7 +75,7 @@ int round_pages(int bytes) {
 int bucket_lookup(size_t bytes) {
     int index = -1;
     for (int i = 0; i < BUCKETS; i++) {
-        if (bytes < block_sizes[i]) {
+        if (bytes <= block_sizes[i]) {
             return i;
         }
     }
@@ -131,7 +132,7 @@ void* xmalloc(size_t bytes) {
                 new_block->next = (block*) (ptr + (i + 1) * block_size);
             } // This does blocks "out of order", but that doesn't matter. It's a stack!
             // Fix last one. It was pointing out of memory.
-            ((block*) (ptr + allocations * block_size))->next = 0;
+            ((block*) (ptr + (allocations - 1) * block_size))->next = 0;
             arenas[arena_index].heads[index] = ptr + block_size; // Second block is the head.
             first_block = ptr;  // First block is literally the first block.
         }
@@ -141,6 +142,14 @@ void* xmalloc(size_t bytes) {
         arenas[arena_index].heads[index] = first_block->next;
         void* ptr = first_block + 1; // We consciously use block pointer type here.
         pthread_mutex_unlock(&(arenas[arena_index].lock));
+        
+        if (first_block->size < bytes) {
+            printf("%p \n", first_block);
+            printf("%d \n", first_block->size);
+            printf("%d \n", block_sizes[index]);
+            printf("%ld \n", bytes);
+            abort();
+        }
         
         return ptr;
     } else {
